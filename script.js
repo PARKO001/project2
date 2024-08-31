@@ -2,7 +2,7 @@ let currentIndex = 0;
 const slides = document.querySelectorAll('.carousel-slide');
 const totalSlides = slides.length;
 const dots = document.querySelectorAll('.dot');
-const fallbackImage = 'images/fallback.jpg'; // Ensure this is the correct path to the fallback image
+const fallbackImage = 'images/fallback.jpg';
 
 document.querySelector('.next').addEventListener('click', () => {
     moveToNextSlide();
@@ -51,10 +51,23 @@ function updateCarousel() {
 // Load fallback image if original fails
 slides.forEach(slide => {
     const img = slide.querySelector('img');
-    img.addEventListener('error', () => {
-        img.src = fallbackImage;
-    });
+    img.onerror = function() {
+        this.onerror = null; // Prevent infinite loop if fallback also fails
+        this.src = fallbackImage;
+    };
 });
 
 // Initialize the first dot as active
 dots[0].classList.add('active');
+
+// Preload images and set fallback if needed
+window.addEventListener('load', () => {
+    slides.forEach(slide => {
+        const img = slide.querySelector('img');
+        const tempImage = new Image();
+        tempImage.src = img.src;
+        tempImage.onerror = function() {
+            img.src = fallbackImage;
+        };
+    });
+});
